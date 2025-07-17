@@ -1,0 +1,21 @@
+{
+  "name": "datase_update",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dbdiff": "^0.5.3",
+    "express": "^5.1.0",
+    "express-fileupload": "^1.5.2",
+    "node-sql-parser": "^5.3.10",
+    "sql-parser": "^0.5.0"
+  }
+}

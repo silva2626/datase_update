@@ -1,0 +1,7 @@
+# Dependencies
+node_modules/
+# Logs
+logs/
+*.log
+test_homologacao.sql
+test_producao.sql

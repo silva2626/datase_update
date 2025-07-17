@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comparador de Schema MySQL</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        padding: 2rem;
+      }
+      .result-box {
+        margin-top: 2rem;
+        display: none;
+      }
+      #sql-result {
+        font-family: monospace;
+        white-space: pre;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        min-height: 200px;
+      }
+      .loading-box {
+        margin-top: 2rem;
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-text {
+        color: #007bff;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+      .loading-subtitle {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="mb-4">🚀 Comparador de Schema MySQL</h1>
+      <p class="lead">
+        Suba os dumps de estrutura (.sql) dos bancos de Produção (antigo) e
+        Homologação (novo) para gerar o script de migração.
+      </p>
+
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="prodFile" class="form-label"
+            ><b>1. Dump de Produção (Estado Atual)</b></label
+          >
+          <input
+            class="form-control"
+            type="file"
+            id="prodFile"
+            name="producao"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="homologFile" class="form-label"
+            ><b>2. Dump de Homologação (Estado Desejado)</b></label
+          >
+          <input
+            class="form-control"
+            type="file"
+            id="homologFile"
+            name="homologacao"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitButton">
+          Gerar Script de Alteração
+        </button>
+      </form>
+
+      <!-- Loading Box -->
+      <div class="loading-box" id="loadingBox">
+        <div class="spinner"></div>
+        <div class="loading-text">Gerando script de migração...</div>
+        <div class="loading-subtitle">
+          Analisando diferenças entre os bancos de dados
+        </div>
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <h3 class="mt-4">✅ Script de Migração Gerado:</h3>
+        <p>
+          <strong>Atenção:</strong> Revise este script cuidadosamente antes de
+          executá-lo!
+        </p>
+        <pre
+          id="sql-result"
+        ><code>-- O script de alteração aparecerá aqui...</code></pre>
+        <button id="copyButton" class="btn btn-secondary mt-2">
+          Copiar Script
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("uploadForm");
+      const resultBox = document.getElementById("resultBox");
+      const loadingBox = document.getElementById("loadingBox");
+      const submitButton = document.getElementById("submitButton");
+      const sqlResult = document.getElementById("sql-result");
+      const copyButton = document.getElementById("copyButton");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        // Mostrar loading e desabilitar botão
+        loadingBox.style.display = "block";
+        resultBox.style.display = "none";
+        submitButton.disabled = true;
+        submitButton.textContent = "Processando...";
+
+        try {
+          const response = await fetch("/compare", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            sqlResult.textContent =
+              result.diff_sql || "-- Nenhuma alteração necessária.";
+
+            // Ocultar loading e mostrar resultado
+            loadingBox.style.display = "none";
+            resultBox.style.display = "block";
+          } else {
+            // Ocultar loading em caso de erro
+            loadingBox.style.display = "none";
+            alert("Erro: " + result.error);
+          }
+        } catch (error) {
+          console.error("Erro na requisição:", error);
+          // Ocultar loading em caso de erro
+          loadingBox.style.display = "none";
+          alert("Ocorreu um erro inesperado ao processar os arquivos.");
+        } finally {
+          // Reabilitar botão
+          submitButton.disabled = false;
+          submitButton.textContent = "Gerar Script de Alteração";
+        }
+      });
+
+      copyButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(sqlResult.textContent).then(
+          () => {
+            alert("Script copiado para a área de transferência!");
+          },
+          (err) => {
+            alert("Falha ao copiar o script.");
+          }
+        );
+      });
+    </script>
+  </body>
+</html>
