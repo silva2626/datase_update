@@ -517,7 +517,7 @@ Este projeto está sob a licença ISC. Veja o arquivo `LICENSE` para mais detalh
 
 ## 👥 Desenvolvido por
 
-- **Softmus** - Desenvolvimento e manutenção
+- **Allison Silva** - Desenvolvimento e manutenção
 
 ## 📞 Suporte
 
